@@ -27,6 +27,18 @@ public class UserController {
         UserEntity savedUser = userService.createPerson(userEntity);
     return ResponseEntity.ok(savedUser);
     }
+
+    @GetMapping(path = '{slug}')
+    public ResponseEntity<UserEntity> findPersonByIdOrName(@PathVariable String slug)
+    if(slug instanceof Integer){
+        Long id = Long.parseLong(slug)
+        UserEntity userEntity = userService.getPersonById(slug).orElse(null)
+        return ResponseEntity.ok(userEntity)
+    }
+    else {
+        return ResponseEntity.ok(userService.getPersonByName(slug))
+    }
+
     @GetMapping(path = "{user_id}")
     public ResponseEntity<UserEntity> getUserById(@PathVariable(value = "user_id") Long userId){
     UserEntity userEntity =userService.getPersonById(userId);

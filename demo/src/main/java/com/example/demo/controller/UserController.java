@@ -35,14 +35,14 @@ public class UserController {
     }
     return ResponseEntity.ok(userEntity);
     }
-    @GetMapping(path = "{name}")
+   /* @GetMapping(path = "{name}")
     public ResponseEntity<UserEntity> getUserByName(@PathVariable(value = "name") String name){
         UserEntity userEntity =userService.getPersonByName(name);
         if(userEntity==null){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(userEntity);
-    }
+    }*/
 
     @PutMapping(path = "{user_id}")
     public ResponseEntity<UserEntity> updateUserById(@PathVariable(value = "user_id") Long userId, @RequestBody Map<String,Object> userEntity){

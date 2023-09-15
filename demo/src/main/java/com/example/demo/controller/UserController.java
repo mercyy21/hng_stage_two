@@ -2,12 +2,15 @@ package com.example.demo.controller;
 
 import com.example.demo.model.UserEntity;
 import com.example.demo.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -19,51 +22,57 @@ public class UserController {
         this.userService = userService;
     }
     @PostMapping
-    public ResponseEntity<UserEntity> createUser(@RequestBody UserEntity userEntity){
+    public ResponseEntity<CustomResponse> createUser(@RequestBody UserEntity userEntity){
         String userName= userEntity.getName();
-        if(userName.getClass()!=String.class){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        CustomResponse response = new CustomResponse();
+        if(userName.matches("^[A-Za-z ]+$")){
+            UserEntity savedUser = userService.createPerson(userEntity);
+            response.setUserEntity(savedUser);
+            return ResponseEntity.ok(response);
         }
-        UserEntity savedUser = userService.createPerson(userEntity);
-    return ResponseEntity.ok(savedUser);
+        response.setMessage("Username cannot be an integer");
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+
     }
 
-    @GetMapping(path = '{slug}')
-    public ResponseEntity<UserEntity> findPersonByIdOrName(@PathVariable String slug)
-    if(slug instanceof Integer){
-        Long id = Long.parseLong(slug)
-        UserEntity userEntity = userService.getPersonById(slug).orElse(null)
-        return ResponseEntity.ok(userEntity)
-    }
-    else {
-        return ResponseEntity.ok(userService.getPersonByName(slug))
-    }
-
-    @GetMapping(path = "{user_id}")
-    public ResponseEntity<UserEntity> getUserById(@PathVariable(value = "user_id") Long userId){
-    UserEntity userEntity =userService.getPersonById(userId);
-    if(userEntity==null){
-        return ResponseEntity.notFound().build();
-    }
-    return ResponseEntity.ok(userEntity);
-    }
-   /* @GetMapping(path = "{name}")
-    public ResponseEntity<UserEntity> getUserByName(@PathVariable(value = "name") String name){
-        UserEntity userEntity =userService.getPersonByName(name);
-        if(userEntity==null){
-            return ResponseEntity.notFound().build();
+    @GetMapping(path = "{identifier}")
+    public ResponseEntity<UserEntity> getPersonByIdOrName(@PathVariable String identifier){
+        UserEntity userEntity;
+        if(identifier.matches("\\d+")){//matches 1 or more consecutive digits, d stands for digits(0-9)
+            Long id = Long.parseLong(identifier);
+             userEntity = userService.getPersonById(id);
+            return ResponseEntity.ok(userEntity);
         }
-        return ResponseEntity.ok(userEntity);
-    }*/
+        else {
+            userEntity = userService.getPersonByName(identifier);
+            return ResponseEntity.ok(userEntity);
+        }
+    }
 
-    @PutMapping(path = "{user_id}")
-    public ResponseEntity<UserEntity> updateUserById(@PathVariable(value = "user_id") Long userId, @RequestBody Map<String,Object> userEntity){
-    return userService.updatePersonById(userId,userEntity);
+
+    @PutMapping(path = "{identifier}")
+    public ResponseEntity<UserEntity> updateUser(@PathVariable(value = "identifier") String identifier, @RequestBody Map<String,Object> userEntity){
+        UserEntity updatedUserEntity;
+        if(identifier.matches("\\d+")){//matches 1 or more consecutive digits, d stands for digits(0-9)
+            Long id = Long.parseLong(identifier);
+            return userService.updatePersonById(id,userEntity);
+        }
+        else {
+            return userService.updatePersonByName(identifier,userEntity);
+        }
     }
 
     @DeleteMapping("{user_id}")
-    public ResponseEntity<HttpStatus> deleteUserById(@PathVariable(value = "user_id")Long userId){
-    return userService.deletePersonById(userId);
+
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable(value = "user_id")String identifier){
+        UserEntity updatedUserEntity;
+        if(identifier.matches("\\d+")){//matches 1 or more consecutive digits, d stands for digits(0-9)
+            Long id = Long.parseLong(identifier);
+            return userService.deletePersonById(id);
+        }
+        else {
+            return userService.deletePersonByName(identifier);
+        }
 
     }
 

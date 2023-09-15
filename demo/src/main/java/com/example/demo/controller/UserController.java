@@ -62,9 +62,9 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("{user_id}")
+    @DeleteMapping("{identifier}")
 
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable(value = "user_id")String identifier){
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable(value = "identifier")String identifier){
         UserEntity updatedUserEntity;
         if(identifier.matches("\\d+")){//matches 1 or more consecutive digits, d stands for digits(0-9)
             Long id = Long.parseLong(identifier);
